@@ -15,6 +15,7 @@ import {
 import { createVideo } from "../../api/video";
 import { CreateVideoResponse, GenerateVideoData } from "../../typings/videos";
 import { useState, useEffect } from "react";
+import { Popup } from "../Common/Popup";
 
 export const GenerateVideoForm = () => {
   const {
@@ -28,6 +29,8 @@ export const GenerateVideoForm = () => {
   );
   const [loader, setLoader] = useState<boolean>(false);
   const [openModal, setOpenModal] = useState<boolean>(false);
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [alertMsg, updateAlertMessage] = useState<string>("");
 
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
@@ -49,18 +52,34 @@ export const GenerateVideoForm = () => {
     }
   }, []);
 
-  const onSubmit = async (data: GenerateVideoData) => {
+  const onSubmit = (data: GenerateVideoData) => {
     setLoader(true);
     handleOpen();
-    const response = await createVideo(data.title, data.script);
-    setLoader(false);
-    const updatedVideoDetails = [...videoDetails, response.data];
-    updateVideoDetails(updatedVideoDetails);
-    localStorage.setItem("video", JSON.stringify(updatedVideoDetails));
+    createVideo(data.title, data.script)
+      .then((response) => {
+        setLoader(false);
+        const updatedVideoDetails = [...videoDetails, response.data];
+        updateVideoDetails(updatedVideoDetails);
+        localStorage.setItem("video", JSON.stringify(updatedVideoDetails));
+      })
+      .catch((err) => {
+        setLoader(false);
+        handleClose();
+        if (err?.response.status === 400) {
+          updateAlertMessage(err.response.data.context);
+          setShowPopup(true);
+        } else {
+          updateAlertMessage(
+            "Facing some issue generating Video. Please try again later"
+          );
+          setShowPopup(true);
+        }
+      });
   };
+
   return (
     <Grid container spacing={0} justifyContent="center" alignItems="center">
-      <Grid item lg={4} md={10} sm={12} xs={12}>
+      <Grid item lg={6} md={10} sm={12} xs={12}>
         <Card sx={{ width: "100%" }}>
           <CardContent>
             <Typography variant="h3">Generate Video</Typography>
@@ -188,6 +207,7 @@ export const GenerateVideoForm = () => {
           </form>
         </Card>
       </Grid>
+      <Popup open={showPopup} message={alertMsg} />
       {openModal && (
         <Modal open={openModal} onClose={handleClose}>
           <Box sx={style}>

@@ -17,8 +17,8 @@ export const createVideo = async (title: string, scriptText: string) => {
     headers: { Authorization: synthesiaKey },
   };
   const data = {
-    test: "true",
-    visibility: "private",
+    test: "false",
+    visibility: "public",
     title,
     input: [
       {

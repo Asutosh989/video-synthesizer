@@ -15,6 +15,7 @@ import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import CloseIcon from "@mui/icons-material/Close";
 import moment from "moment";
 import { getVideos } from "../../api/video";
+import { Popup } from "../Common/Popup";
 
 export const ViewVideo = () => {
   const [videoDetails, updateVideoDetails] = useState<CreateVideoResponse[]>(
@@ -22,6 +23,8 @@ export const ViewVideo = () => {
   );
   const [openVideoPlayer, updateOpenVideoPlayer] = useState<boolean>(false);
   const [activeUrl, updateActiveUrl] = useState<string | undefined>(undefined);
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [alertMsg, updateAlertMessage] = useState<string>("");
 
   useEffect(() => {
     fetchFromLocalStorage();
@@ -46,11 +49,24 @@ export const ViewVideo = () => {
     }
   };
 
-  const refetchVideoDetails = async (videoId: string) => {
-    const response = await getVideos(videoId);
-    if (response.data.download) {
-      updateStorage(videoId, response.data);
-    }
+  const refetchVideoDetails = (videoId: string) => {
+    getVideos(videoId)
+      .then((response) => {
+        if (response.data.download) {
+          updateStorage(videoId, response.data);
+        }
+      })
+      .catch((err: any) => {
+        if (err?.response.status === 400) {
+          updateAlertMessage(err.response.data.context);
+          setShowPopup(true);
+        } else {
+          updateAlertMessage(
+            "Facing some issue fetching Video info. Please try again later"
+          );
+          setShowPopup(true);
+        }
+      });
   };
 
   const updateStorage = (videoId: string, data: CreateVideoResponse) => {
@@ -178,23 +194,22 @@ export const ViewVideo = () => {
               >
                 <Grid item xs={4}>
                   <Card sx={style}>
-                      <Grid
-                        container
-                        spacing={0}
-                        justifyContent="end"
-                        alignItems="end"
-                      >
-                        <Grid item>
-                          <IconButton
-                            aria-label="close"
-                            onClick={() => updateOpenVideoPlayer(false)}
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        </Grid>
+                    <Grid
+                      container
+                      spacing={0}
+                      justifyContent="end"
+                      alignItems="end"
+                    >
+                      <Grid item>
+                        <IconButton
+                          aria-label="close"
+                          onClick={() => updateOpenVideoPlayer(false)}
+                        >
+                          <CloseIcon />
+                        </IconButton>
                       </Grid>
+                    </Grid>
                     <CardContent>
-
                       <video
                         id="my-player"
                         className="video-js"
@@ -213,6 +228,7 @@ export const ViewVideo = () => {
           )}
         </>
       ))}
+      <Popup open={showPopup} message={alertMsg} />
     </Grid>
   ) : (
     <Grid container spacing={0} justifyContent="center" alignItems="center">
