@@ -84,12 +84,20 @@ export const ViewVideo = () => {
     if (!url) {
       return;
     }
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = title;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Creating xhr as sometimes normal anchor tag download doesn't work as expected
+    const xhr = new XMLHttpRequest();
+    xhr.responseType = "blob";
+    xhr.onload = function () {
+      const blob = new Blob([xhr.response], { type: "video/mp4" });
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = title;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+    xhr.open("GET", url);
+    xhr.send();
   };
 
   const sortedVideoDetailsDataByDate = (
@@ -104,9 +112,9 @@ export const ViewVideo = () => {
 
   return videoDetails.length ? (
     <Grid container spacing={3} alignItems="center">
-      {videoDetails.map((video, index) => (
+      {videoDetails.map((video) => (
         <>
-          <Grid item key={index}>
+          <Grid item key={video.id}>
             <Card sx={{ width: 320 }}>
               <CardContent>
                 <Typography variant="h5">{video.title}</Typography>

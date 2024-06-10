@@ -21,6 +21,7 @@ export const GenerateVideoForm = () => {
   const {
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<GenerateVideoData>();
 
@@ -58,6 +59,7 @@ export const GenerateVideoForm = () => {
     createVideo(data.title, data.script)
       .then((response) => {
         setLoader(false);
+        reset();
         const updatedVideoDetails = [...videoDetails, response.data];
         updateVideoDetails(updatedVideoDetails);
         localStorage.setItem("video", JSON.stringify(updatedVideoDetails));
@@ -65,7 +67,7 @@ export const GenerateVideoForm = () => {
       .catch((err) => {
         setLoader(false);
         handleClose();
-        if (err?.response.status === 400) {
+        if (err?.response?.status === 400) {
           updateAlertMessage(err.response.data.context);
           setShowPopup(true);
         } else {
@@ -79,7 +81,7 @@ export const GenerateVideoForm = () => {
 
   return (
     <Grid container spacing={0} justifyContent="center" alignItems="center">
-      <Grid item lg={6} md={10} sm={12} xs={12}>
+      <Grid item md={10} sm={12} xs={12}>
         <Card sx={{ width: "100%" }}>
           <CardContent>
             <Typography variant="h3">Generate Video</Typography>

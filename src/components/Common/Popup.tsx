@@ -1,11 +1,7 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Snackbar, { SnackbarOrigin } from "@mui/material/Snackbar";
+import Snackbar from "@mui/material/Snackbar";
 import { Alert } from "@mui/material";
-
-interface State extends SnackbarOrigin {
-  open: boolean;
-}
 
 interface PopupProps {
   message: string;
@@ -13,32 +9,22 @@ interface PopupProps {
 }
 
 export const Popup = (props: PopupProps) => {
-  const [state, setState] = React.useState<State>({
-    open: props.open,
-    vertical: "bottom",
-    horizontal: "center",
-  });
-  const { vertical, horizontal, open } = state;
+  const [open, setOpen] = React.useState<boolean>(props.open);
 
   React.useEffect(() => {
-    console.log("Props.change", props);
-    if (props.open) {
-      handleClick();
+    if (open !== props.open) {
+      setOpen(props.open);
     }
   }, [props]);
 
-  const handleClick = () => () => {
-    setState({ ...state, open: true });
-  };
-
   const handleClose = () => {
-    setState({ ...state, open: false });
+    setOpen(false);
   };
 
   return (
     <Box sx={{ width: 500 }}>
       <Snackbar
-        anchorOrigin={{ vertical, horizontal }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         open={open}
         autoHideDuration={5000}
         onClose={handleClose}
